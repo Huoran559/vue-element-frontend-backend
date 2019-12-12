@@ -5,15 +5,13 @@
 该项目 是open_galaxy的demo版本，open_galaxy项目使用python+django+vue+restful 技术以及框架。 demo版本是 项目的一个简化版本，技术框架一样。
 open_galaxy项目请查看 http://www.bdkyr.com/open_galaxy/cn/
 
-##作者
- 老僧(QQ:1572665580),飞龙(hhr66@qq.com)
 
 ## 环境
 
 ```
-Centos 6
-Python 3.6.1
-mysql-server 5.6.21
+Python 3.7.4
+mysql-server 5.7
+redis
 node 9.4.0
 Django==2.1.4
 djangorestframework==3.9.0
@@ -24,22 +22,45 @@ djangorestframework==3.9.0
 Clone the repository:
 
 ```zsh
-    git clone git@github.com:DevOpsUnionTop/vue-element-frontend-backend.git
+    git clone https://github.com/Huoran559/vue-element-frontend-backend.git bastion 
 ```
 
 创建 and 激活 virtualenv:
 
 ```zsh
 ➜  cd vue-element-frontend-backend
-➜  virtualenv -p python3 env
-➜  source env/bin/activate
+➜  python3.7 -m venv pyenv
+➜  source pyenv/bin/activate
+➜  cp vue-element-frontend-backend/.env_example vue-element-frontend-backend/pyenv_extend  
+#按照 自己的数据库，redis 等进行配置
+➜  export $(cat pyenv_extend | grep -v '#') 
 ```
 
 Run scripts from Makefile that install all dependencies, run migrations and start dev server.
 
 ```zsh
-(env) ➜  mysql -uroot -p -e "create database open_galaxy default charset utf8;"
-(env) ➜  cp vue-element-frontend-backend/.env_example vue-element-frontend-backend/.env  #按照 自己的数据库，redis 等进行配置  
+# install mysql and redis
+# docker pull mysql:5.7
+docker run -p 3306:3306 --privileged=true \
+	--name mysql \
+	-v /Users/huoran/Documents/projects/dev_env/mysql/logs:/logs \
+	-v /Users/huoran/Documents/projects/dev_env/mysql/data:/var/lib/mysql \
+	-v /Users/huoran/Documents/projects/dev_env/mysql/conf.d/my.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf \
+	-e MYSQL_ROOT_PASSWORD=q1w2e3r4 \
+	-d mysql:5.7
+# docker pull redis
+docker run -d \
+-p 6379:6379 \
+-v /Users/huoran/Documents/projects/dev_env/redis/redis.conf:/etc/redis/redis.conf \
+--privileged=true \
+--name redis \
+redis \
+redis-server /etc/redis/redis.conf
+
+# 进入docker，创建mysql database
+(env) ➜  docker exec -it mysql  
+# mysql -uroot -p -e "create database open_galaxy default charset utf8mb4;"
+
 (env) ➜  make init
 (env) ➜  make dev
 (env) ➜  make build-prod
