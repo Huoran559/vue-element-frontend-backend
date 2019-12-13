@@ -28,10 +28,10 @@ Clone the repository:
 创建 and 激活 virtualenv:
 
 ```zsh
-➜  cd vue-element-frontend-backend
+➜  cd bastion 
 ➜  python3.7 -m venv pyenv
 ➜  source pyenv/bin/activate
-➜  cp vue-element-frontend-backend/.env_example vue-element-frontend-backend/pyenv_extend  
+➜  cp bastion/.env_example bastion/pyenv_extend  
 #按照 自己的数据库，redis 等进行配置
 ➜  export $(cat pyenv_extend | grep -v '#') 
 ```

@@ -1,14 +1,20 @@
 /**
-* author:laoseng(QQ:1572665580),feilong(hhr66@qq.com)
-* create:2018-07
+ * author:laoseng(QQ:1572665580),feilong(hhr66@qq.com)
+ * create:2018-07
  *  异步统一request封装
  */
 import axios from 'axios'
-import { Message } from 'element-ui'
+import {
+  Message
+} from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import {
+  getToken
+} from '@/utils/auth'
 import router from '@/router'
-import {getDomain} from '@/utils'
+import {
+  getDomain
+} from '@/utils'
 
 const service = axios.create({
   baseURL: getDomain() + '/api/v1', // api 的 base_url
@@ -37,7 +43,7 @@ service.interceptors.response.use(
   response => response,
   error => {
     var message = ''
-    console.log("=====>",error.response.status)
+    console.log("=====>", error.response.status)
     switch (error.response.status) {
       case 401:
         message = '未授权，请登录!'
@@ -49,8 +55,9 @@ service.interceptors.response.use(
         if (error.response.config.url.indexOf('/login') >= 0) {
           message = '用户名密码错误!'
         } else {
-          for(var key in error.response.data){//遍历json对象的每个key/value对,p为key
-            message=error.response.data[key][0]
+          // 遍历json对象的每个key/value对,p为key
+          for (var key in error.response.data) {
+            message = error.response.data[key][0]
           }
         }
         break
@@ -58,18 +65,18 @@ service.interceptors.response.use(
         message = '请求不存在!'
         break
       case 500:
-        var errmsg=""
-        if(error.response.hasOwnProperty("detail")){
-          errmsg=error.response.hasOwnProperty("detail")
+        var errmsg = ""
+        if (error.response.hasOwnProperty("detail")) {
+          errmsg = error.response.hasOwnProperty("detail")
         }
-        message = '服务异常:'+errmsg
+        message = '服务异常:' + errmsg
         break
       case 502:
-        var errmsg=""
-        if(error.response.hasOwnProperty("detail")){
-          errmsg=error.response.hasOwnProperty("detail")
+        var errmsg = ""
+        if (error.response.hasOwnProperty("detail")) {
+          errmsg = error.response.hasOwnProperty("detail")
         }
-        message = '服务异常:'+errmsg
+        message = '服务异常:' + errmsg
         break
       default:
         message = 'Oops, 出错啦!'
