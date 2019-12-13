@@ -10,8 +10,15 @@ migrate:
 	source env/bin/activate && python backend/manage.py makemigrations && python backend/manage.py migrate
 
 dev:
-	# npm run --prefix frontend dev & (source env/bin/activate && python backend/manage.py runserver)
-	npm run --prefix frontend dev & python backend/manage.py runserver
+	docker restart mysql
+	docker restart redis
+	npm run --prefix frontend dev &
+	source pyenv/bin/activate 
+	export $(cat pyenv_extend | grep -v '#') 
+
+	python backend/manage.py runserver & 
+	
+	# npm run --prefix frontend dev & python backend/manage.py runserver
 
 start:
 	test ! -f backend/logs/uwsgi.pid && source env/bin/activate && uwsgi --ini backend/uwsgi.ini || echo 'uwsgi running'
