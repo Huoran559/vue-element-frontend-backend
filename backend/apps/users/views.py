@@ -193,6 +193,7 @@ class UserViewSet(mixins.CreateModelMixin, BaseGenericViewSet):
         '''
         账号密码登录
         '''
+        logger.debug('login handler')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.object.get('user') or request.user

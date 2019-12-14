@@ -17,7 +17,8 @@ import {
 } from '@/utils'
 
 const service = axios.create({
-  baseURL: getDomain() + '/api/v1', // api 的 base_url
+  // baseURL: getDomain() + '/api/v1', // api 的 base_url
+  baseURL: 'http://127.0.0.1:8004' + '/api/v1', // api 的 base_url
   timeout: 10000, // request timeout
 })
 

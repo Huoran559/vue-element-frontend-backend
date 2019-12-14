@@ -1,8 +1,11 @@
 # coding:utf-8
-#author:laoseng(QQ:1572665580),feilong(hhr66@qq.com)
+# author:laoseng(QQ:1572665580),feilong(hhr66@qq.com)
 """
 Django settings for project.
 """
+from kombu import Exchange, Queue
+from celery import platforms
+import djcelery
 import os
 import sys
 import datetime
@@ -30,7 +33,8 @@ ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
 ALLOW_EMAIL_DOMAIN = os.environ.get('ALLOW_EMAIL_DOMAIN')
 
 TOKEN_NAME = os.environ.get('TOKEN_NAME')
-SSO_CLIENT_ENABLE = True if os.environ.get('SSO_CLIENT_ENABLE') == 'True' else False
+SSO_CLIENT_ENABLE = True if os.environ.get(
+    'SSO_CLIENT_ENABLE') == 'True' else False
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PORT = os.environ.get('REDIS_PORT')
@@ -46,7 +50,7 @@ DB_PASSWD = os.environ.get('DB_PASSWD')
 INIT_ADMIN_USERNAME = os.environ.get('INIT_ADMIN_USERNAME')
 INIT_ADMIN_PASSWORD = os.environ.get('INIT_ADMIN_PASSWORD')
 
-#开启双因子认证
+# 开启双因子认证
 MFA_ENABLE = True if os.environ.get('MFA_ENABLE') == 'True' else False
 
 
@@ -83,14 +87,14 @@ INSTALLED_APPS = [
     'xadmin',
     'crispy_forms',
     'reversion',
-    #restful 设计风格
+    # restful 设计风格
     'rest_framework',
-    #文档使用
+    # 文档使用
     'rest_framework_swagger',
-    #token验证使用
+    # token验证使用
     'rest_framework.authtoken',
 
-    #跨域
+    # 跨域
     'corsheaders',
 
     'django_filters',
@@ -104,13 +108,13 @@ APPS = os.listdir(app_dir)
 INSTALLED_APPS.extend(['{}'.format(row) for row in APPS])
 
 
-#一般而言，中间件就是一个类，继承自MiddlewareMixin，比如说SessionMiddleware：
-#重载了两个方法，分别是process_request和process_response方法，相当于很多框架生命周期里面的钩子函数，这两个方法如果被重载了，
+# 一般而言，中间件就是一个类，继承自MiddlewareMixin，比如说SessionMiddleware：
+# 重载了两个方法，分别是process_request和process_response方法，相当于很多框架生命周期里面的钩子函数，这两个方法如果被重载了，
 # 那么在request/response的过程中，肯定会被执行，在可以选择自己需要的中间件，也可以自己定义中间件取实现不同的功能。一般而言，被用作全局拦截器使用。
 MIDDLEWARE = [
     # 拦截请求，设置session到request
 
-    #SessionMiddleware作用
+    # SessionMiddleware作用
     # 1.用户登录成功 ，服务器生成一个sessionid,保存到
     #
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -123,11 +127,11 @@ MIDDLEWARE = [
     'crequest.middleware.CrequestMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #验证登录
+    # 验证登录
     'users.middleware.AuthMiddleware',
-    #验证auth2.0
+    # 验证auth2.0
     'users.middleware.OtpAuthMiddleware',
-    #验证url是否有权限
+    # 验证url是否有权限
     'users.middleware.UrlCheckMiddleware',
 
     'social_django.middleware.SocialAuthExceptionMiddleware',
@@ -155,29 +159,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-if DATABASE == 'mysql':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
-            'OPTIONS': {
-                'autocommit': True,
-                'charset': 'utf8',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-                },
-        }
+# if DATABASE == 'mysql':
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+        'OPTIONS': {
+            'autocommit': True,
+            'charset': 'utf8',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'sqlite3.db'),
-        }
-    }
+}
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'sqlite3.db'),
+#         }
+#     }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -243,8 +247,11 @@ CACHES = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
     # 配置默认的认证方式 base:账号密码验证
-    #session：session_id认证
+    # session：session_id认证
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # drf的这一阶段主要是做验证,middleware的auth主要是设置session和user到request对象
         # 默认的验证是按照验证列表从上到下的验证
@@ -261,7 +268,7 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S",
 }
 
-#token失效期
+# token失效期
 JWT_AUTH = {
     'JWT_AUTH_COOKIE': TOKEN_NAME,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
@@ -273,11 +280,11 @@ JWT_AUTH = {
 # 因为models使用AbstractUser
 AUTH_USER_MODEL = 'users.UserProfile'
 
-#静态文件存储路径配置
+# 静态文件存储路径配置
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media').replace("\\", "/")
 
-#日志配置
+# 日志配置
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -322,7 +329,8 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['default', 'console'],
-            'level': 'INFO',
+            # 'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False
         },
         'django.request': {
@@ -332,14 +340,15 @@ LOGGING = {
         },
         'views': {
             'handlers': ['default', 'error'],
-            'level': 'INFO',
+            'level': 'DEBUG',
+            # 'level': 'INFO',
             'propagate': True
         }
     }
 
 }
 
-#第三方登录相关
+# 第三方登录相关
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.weibo.WeiboOAuth2',
     'social_core.backends.qq.QQOAuth2',
@@ -389,9 +398,6 @@ CONTENT_TYPE = {
 }
 
 # CELERY  定时任务
-import djcelery
-from celery import platforms
-from kombu import Exchange, Queue
 
 platforms.C_FORCE_ROOT = True
 djcelery.setup_loader()

@@ -1,41 +1,15 @@
 version: '2'
 services:
-    mysql:
-      image: mysql:5.7
-      container_name: mysql
-      restart: always
-      environment:
-        # So you don't have to use root, but you can if you like
-        # MYSQL_USER: 'user'
-        # You can use whatever password you like
-        # MYSQL_PASSWORD: 'password'
-        # Password for root access
-        MYSQL_ROOT_PASSWORD: 'q1w2e3r4'
-      ports:
-        - "3306:3306"
-      volumes:
-        - ./mysql/logs:/logs
-        - ./mysql/data:/var/lib/mysql
-        - ./mysql/conf.d/my.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
-      privileged: true
-
-    redis:
-      image: redis:latest
-      container_name: redis
-      ports:
-        - "6379:6379"
-      volumes:
-        - ./redis/redis.conf:/etc/redis/redis.conf 
-      command: redis-server /etc/redis/redis.conf 
-      privileged: true
-
     django:
       image: django:v1
-      container_name: django
+      container_name: django_01
       working_dir: /backend
-      env_file: ../docker_extend.env
+      env_file: ./docker_extend.env
       command: bash -c "python3.7 manage.py makemigrations && python3.7 manage.py migrate && python3.7 manage.py collectstatic --noinput && python manage.py runserver"
       depends_on:
+        - mysql
+        - redis
+      links: 
         - mysql
         - redis
       volumes:
@@ -45,3 +19,47 @@ services:
       expose:
         - "8004"
       restart: always
+      networks: 
+        - backend
+    mysql:
+      image: mysql:5.7
+      container_name: mysql_01
+      restart: always
+      environment:
+        # So you don't have to use root, but you can if you like
+        # MYSQL_USER: 'user'
+        # You can use whatever password you like
+        # MYSQL_PASSWORD: 'password'
+        # Password for root access
+        MYSQL_ROOT_PASSWORD: 'q1w2e3r4'
+        MYSQL_HOST: 'localhost'
+        MYSQL_PORT: 3306  # cannot change this port to other number
+      ports:
+        - "3306:3306"
+      expose:
+        - "3306"
+      volumes:
+        - ./mysql/logs:/logs
+        - ./mysql/data:/var/lib/mysql
+        - ./mysql/conf.d/my.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+      networks: 
+        backend:
+          aliases:
+            - mysql.local.domain
+    redis:
+      image: redis:latest
+      container_name: redis_01
+      ports:
+        - "6379:6379"
+      expose:
+        - "6379"
+      volumes:
+        - ./redis/redis.conf:/etc/redis/redis.conf 
+      command: redis-server /etc/redis/redis.conf 
+      networks: 
+        backend:
+          aliases:
+            - redis.local.domain
+networks:
+  backend:
+    driver: "bridge"
